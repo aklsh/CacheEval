@@ -1,0 +1,12 @@
+CacheEval: Evaluating the L1 cache parameters
+=============================================
+
+Pre-requisites
+--------------
+python3, gcc, x86_64 processor
+
+Notes
+-----
+To build program: make eval
+To generate plots: make plots
+To generate report: make pdf
