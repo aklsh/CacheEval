@@ -9,5 +9,7 @@ figures: *.svg
 
 .PHONY: clean
 clean:
-	latexmk -c && rm -rf report.synctex.gz && rm report.bbl
+	latexmk -c && rm -rf report.synctex.gz && rm -f report.bbl
 	rm -rf _minted-report
+	rm -f *.pdf
+	rm -f *.pdf_tex
