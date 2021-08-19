@@ -1,0 +1,186 @@
+\documentclass[12pt,a4paper,english]{paper} 
+\usepackage{fontspec}
+\usepackage[utf8]{inputenc}
+\usepackage[margin=2cm]{geometry}
+\usepackage{multirow}
+\usepackage{graphicx}
+\usepackage{bm}
+\usepackage[usenames,dvipsnames]{color}
+\usepackage{booktabs}
+\usepackage{fancyhdr}
+\usepackage[most]{tcolorbox}
+\usepackage{changepage}
+\usepackage[square,sort,comma,numbers]{natbib}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{eucal}
+\usepackage[]{minted}
+\usepackage{latexsym}
+\usepackage{indentfirst}
+\usepackage[ruled,vlined]{algorithm2e}
+\usepackage[english]{babel}
+\usepackage[autostyle, english = american]{csquotes}
+\MakeOuterQuote{"}
+
+\setmonofont[Scale=0.75]{Hack NF}
+
+\def \courseNumber {CS6600}
+\def \courseName {Computer Architecture}
+\def \assignmentName {Reverse Engineering L1 Cache}
+\def \myName {Akilesh Kannan}
+\def \rollNumber {EE18B122}
+
+\setlength{\headheight}{14pt}
+
+\pagestyle{fancy}
+\fancyhf{}
+\rhead{\assignmentName}
+\lhead{\courseNumber: \courseName}
+\cfoot{\thepage}
+
+% \linespread{1.2}
+
+\renewcommand{\familydefault}{\sfdefault} %command to change font to sans-serif
+
+\definecolor{blue(ryb)}{rgb}{0.01, 0.28, 1.0}
+\definecolor{green(ryb)}{rgb}{0.28, 1.0, 0.01}
+\definecolor{red(ryb)}{rgb}{1.0, 0.01, 0.28}
+\definecolor{black(ryb)}{rgb}{0, 0, 0}
+\definecolor{gray(ryb)}{rgb}{0.75, 0.75, 0.75}
+\definecolor{orange}{RGB}{255,155,0}
+\definecolor{formalblue}{rgb}{0.95,0.95,1}
+\definecolor{formalred}{rgb}{1,0.95,0.95}
+
+\newenvironment{colorboxed}[4][gray]{
+\begin{tcolorbox}[colback=#1!3!white,colframe=#1(ryb)!50!black,title=\textbf{#2 #3},#4]
+}{
+\end{tcolorbox}
+}
+
+% environment derived from framed.sty: see leftbar environment definition
+
+\newenvironment{formalred}{%
+  \def\FrameCommand{%
+    \hspace{1pt}%
+    {\color{red}\vrule width 2pt}%
+    {\color{formalred}\vrule width 4pt}%
+    \colorbox{formalred}%
+  }%
+  \MakeFramed{\advance\hsize-\width\FrameRestore}%
+  \noindent\hspace{-4.55pt}% disable indenting first paragraph
+  \begin{adjustwidth}{7pt}{}%
+  \vspace{2pt}\vspace{2pt}%
+}
+{%
+  \vspace{2pt}\end{adjustwidth}\endMakeFramed%
+}
+\newenvironment{formalblue}{%
+  \def\FrameCommand{%
+    \hspace{1pt}%
+    {\color{blue}\vrule width 2pt}%
+    {\color{formalblue}\vrule width 4pt}%
+    \colorbox{formalblue}%
+  }%
+  \MakeFramed{\advance\hsize-\width\FrameRestore}%
+  \noindent\hspace{-4.55pt}% disable indenting first paragraph
+  \begin{adjustwidth}{7pt}{}%
+  \vspace{2pt}\vspace{2pt}%
+}
+{%
+  \vspace{2pt}\end{adjustwidth}\endMakeFramed%
+}
+
+\begin{document} 
+\thispagestyle{empty}
+\vspace{-4.5cm}
+
+\hspace*{-\parindent}
+\begin{minipage}{0.65\textwidth}
+\fontsize{22pt}{10pt}\selectfont\textbf{\assignmentName}\\[1mm]
+\Large
+\textit{\courseNumber: \courseName}\\[5mm]
+\Large \myName \\
+\normalsize \rollNumber \\
+\end{minipage}\hfill% push everything to the right
+% \raisebox{-13mm}{\includegraphics[scale=.28]{logo.pdf}}
+
+\hrule \hrule
+\medskip
+% \vspace{1cm}
+
+
+\begin{formalred}
+    This assignment was worked on individually.
+\end{formalred}
+
+\section{System Details}
+\begin{table}[H]
+    \centering
+    \resizebox{0.65\textwidth}{!}{%
+    \begin{tabular}{|c|c|c|}
+        \hline
+         \textbf{Parameter} & \multicolumn{2}{c|}{\textbf{Value}} \\ \cline{2-3} 
+            & \textit{Predicted} & \textit{Expected \footnotemark} \\ \hline
+        {Associativity}        &                    &        8           \\ \hline
+        {Block Size}           &       64 Bytes     &     64 Bytes       \\ \hline
+        {Processor Name}       & AMD Ryzen 7 4800HS &     -               \\ \hline
+        {ISA}                  & x86\_64            &     -               \\ \hline
+    \end{tabular}
+    }
+    \caption{Summary Table}
+\end{table}
+\footnotetext{On GNU/Linux-based OSes, it is obtained using \texttt{grep . /sys/devices/system/cpu/cpu0/cache/index*/*}}
+
+\section{Approach}
+\begin{formalblue}
+    \textsl{Misses in the cache lead to increased latency in memory access.}
+\end{formalblue}
+
+\subsection{Measuring Block Size}
+\begin{algorithm}[H]
+\SetAlgoLined
+\KwResult{Block Size}
+ \SetKwInput{input}{Input}
+ \input{stride}
+ \SetKw{init}{initialise} \init cacheBlock[64M], sum $=$ 0, startTime $=$ 0, endTime $=$ 0\; 
+ \SetKw{clear}{clear} \clear cache\;
+ \For{i $\leftarrow$ 1 \KwTo 64M}{
+  startTime $\leftarrow$ RDTSC\;
+  sum $\leftarrow$ sum $+$ cacheBlock[i]\;
+  endTime $\leftarrow$ RDTSC\;
+  \SetKw{print}{print}\print endTime $-$ startTime\;
+  i $\leftarrow$ i $+$ stride\;
+ }
+ \caption{Calculating Block Size of L1 D\$}
+\end{algorithm}
+
+The \texttt{RDTSC} instruction returns the data in the Time-Stamp Counter in x86 platforms \cite{intel_2021}.\\
+
+The above algorithm is first tried with a stride of 1 byte. The latencies are then plotted to obtain the following plots in Fig.\ref{Fig:blockSize}. From this, we can see that for every 64 bytes, there is a peak in the time taken. This tells us that every 64$^{th}$ byte that is accessed, there is a miss in the cache and, the required cache block has to be retrieved from memory - giving us the cache block size.
+\begin{figure}[H]
+    \centering
+    \setlength\tabcolsep{1pt}
+    \begin{tabular}{cc}
+        \def\svgwidth{0.5\columnwidth}
+        \input{blockSize_1B.pdf_tex}&
+        \def\svgwidth{0.5\columnwidth}
+        \input{blockSize.pdf_tex}
+    \end{tabular}
+    \caption{Calculating L1-D\$ block size}
+    \label{Fig:blockSize}
+\end{figure}
+
+Another way to confirm the same is by taking different strides across the array, and plotting the access latencies for each memory access. As shown in Fig.\ref{Fig:blockSize}, we can see that every 2$^{nd}$ 32 byte stride takes a high latency, every 4$^{th}$ 16 byte stride takes a high latency, and almost every 64 byte stride takes a high latency. Thus, we again get a block size of 64 bytes.
+
+\subsection{Measuring Associativity}
+On obtaining the block size using above technique, we can reverse-engineer the associativity of the cache by repeatedly accessing blocks that we expect to belong to the same set.
+
+
+%Beginning References. Don't add any text beyond this.
+%------------------------------------------
+
+\newpage %sending References to the last page
+
+\bibliography{paper}
+\bibliographystyle{acm}
+\end{document}
