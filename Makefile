@@ -17,6 +17,7 @@ pdf:
 
 plots: $(DATA_FILES) $(PLT)
 	python3 src/plot.py
+	cp fig/*.svg doc/
 	
 .PHONY: clean
 clean:

@@ -1,6 +1,7 @@
 *.pdf_tex
 *.pdf
 *.png
+*.bbl
 .ccls-cache/
 .ccls
 src/.ccls-cache/
