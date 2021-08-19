@@ -2,4 +2,5 @@
 *.pdf
 *.png
 .ccls-cache/
+.ccls
 src/.ccls-cache/
