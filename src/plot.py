@@ -49,54 +49,6 @@ def plotBlockSize():
     plt.savefig(plotsDir+'blockSize_1B.pdf')
     plt.savefig(plotsDir+'blockSize_1B.svg')
 
-def plotAssociativity():
-    with open('data/data_assoc.txt', 'r') as f:
-        lines = f.readlines()
-        x1 = [(1+x) for x in range(len(lines))]
-        y1 = np.array([int(line.split()[0]) for line in lines])
-    # with open('data/data_assoc_2.txt', 'r') as f:
-    #     lines = f.readlines()
-    #     x1 = [(1+x) for x in range(len(lines))]
-    #     y1 = np.array([int(line.split()[0]) for line in lines])
-    # with open('data/data_assoc_4.txt', 'r') as f:
-    #     lines = f.readlines()
-    #     x2 = [(1+x) for x in range(len(lines))]
-    #     y2 = np.array([int(line.split()[0]) for line in lines])
-    # with open('data/data_assoc_8.txt', 'r') as f:
-    #     lines = f.readlines()
-    #     x3 = [(1+x) for x in range(len(lines))]
-    #     y3 = np.array([int(line.split()[0]) for line in lines])
-    # with open('data/data_assoc_16.txt', 'r') as f:
-    #     lines = f.readlines()
-    #     x4 = [(1+x) for x in range(len(lines))]
-    #     y4 = np.array([int(line.split()[0]) for line in lines])
-    # fig, axs = plt.subplots(2, 2)
-    # axs[0, 0].plot(x1, y1)
-    # axs[0, 0].set_title(r"Every 512$^{th}$ block")
-    # axs[1, 0].plot(x2, y2)
-    # axs[1, 0].set_title(r"Every 128$^{th}$ block")
-    # axs[0, 1].plot(x3[:128], y3[:128])
-    # axs[0, 1].set_title(r"Every 64$^{th}$ block")
-    # axs[1, 1].plot(x4[:128], y4[:128])
-    # axs[1, 1].set_title(r"Every 32$^{nd}$ block")
-    # fig.tight_layout()
-    # plt.show()
-    # plt.savefig(plotsDir+'Assoc.png')
-    # plt.savefig(plotsDir+'Assoc.pdf')
-    # plt.savefig(plotsDir+'Assoc.svg')
-
-    plt.figure()
-    plt.title("Associativity calculation")
-    plt.grid()
-    plt.yticks([])
-    plt.ylabel(r"Latency $\to$")
-    plt.xlabel(r"Block number accessed $\to$")
-    plt.plot(x1,y1)
-    plt.savefig(plotsDir+'assoc.png')
-    plt.savefig(plotsDir+'assoc.pdf')
-    plt.savefig(plotsDir+'assoc.svg')
-    plt.show()
 
 if __name__ == "__main__":
-    # plotBlockSize()
-    plotAssociativity()
+    plotBlockSize()

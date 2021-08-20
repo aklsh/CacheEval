@@ -58,9 +58,7 @@
 \end{tcolorbox}
 }
 
-% environment derived from framed.sty: see leftbar environment definition
-
-\newenvironment{formalred}{%
+\newenvironment{warning}{%
   \def\FrameCommand{%
     \hspace{1pt}%
     {\color{red}\vrule width 2pt}%
@@ -75,7 +73,8 @@
 {%
   \vspace{2pt}\end{adjustwidth}\endMakeFramed%
 }
-\newenvironment{formalblue}{%
+
+\newenvironment{results}{%
   \def\FrameCommand{%
     \hspace{1pt}%
     {\color{blue}\vrule width 2pt}%
@@ -103,47 +102,49 @@
 \Large \myName \\
 \normalsize \rollNumber \\
 \end{minipage}\hfill% push everything to the right
-% \raisebox{-13mm}{\includegraphics[scale=.28]{logo.pdf}}
+\raisebox{-13mm}{\includegraphics[scale=.28]{logo.pdf}}
 
 \hrule \hrule
 \medskip
 % \vspace{1cm}
 
 
-\begin{formalred}
+\begin{warning}
     This assignment was worked on individually.\\
     The programs and tools used can be found here - \url{https://github.com/aklsh/CacheEval}
-\end{formalred}
+\end{warning}
 
 \section{System Details}
 \begin{table}[H]
     \centering
-    \resizebox{0.65\textwidth}{!}{%
+    \resizebox{0.5\textwidth}{!}{%
     \begin{tabular}{|c|c|c|}
         \hline
          \textbf{Parameter} & \multicolumn{2}{c|}{\textbf{Value}} \\ \cline{2-3} 
             & \textit{Predicted} & \textit{Expected \footnotemark} \\ \hline
-        {Associativity}        &                    &        8           \\ \hline
-        {Block Size}           &       64 Bytes     &     64 Bytes       \\ \hline
-        {Processor Name}       & AMD Ryzen 7 4800HS &     -               \\ \hline
-        {ISA}                  & x86\_64            &     -               \\ \hline
+        {Associativity}        &         8          &        8            \\ \hline
+        {Block Size}           &       64 Bytes     &     64 Bytes        \\ \hline
+        {Processor Name}       &         -          &  AMD Ryzen 7 4800HS \\ \hline
+        {ISA}                  &         -          &     x86\_64         \\ \hline
+        {L1 D\$ size}          &         -          &      32 KB          \\ \hline
     \end{tabular}
     }
     \caption{Summary Table}
 \end{table}
-\footnotetext{On GNU/Linux-based OSes, it is obtained using \texttt{grep . /sys/devices/system/cpu/cpu0/cache/index*/*}}
+\footnotetext{On GNU/Linux OSes, it is obtained using \texttt{grep . /sys/devices/system/cpu/cpu0/cache/index*/*}}
 
 \section{Approach}
-\begin{formalblue}
+\begin{results}
     \textsl{Misses in the cache lead to increased latency in memory access.}
-\end{formalblue}
+\end{results}
 
 \subsection{Measuring Block Size}
 \begin{algorithm}[H]
 \SetAlgoLined
 \KwResult{Block Size}
  \SetKwInput{input}{Input}
- \input{stride}
+ \input{stride values}
+ \ForEach{stride}{
  \SetKw{init}{initialise} \init cacheBlock[64M], sum $=$ 0, startTime $=$ 0, endTime $=$ 0\; 
  \SetKw{clear}{clear} \clear cache\;
  \For{i $\leftarrow$ 1 \KwTo 64M}{
@@ -153,6 +154,8 @@
   \SetKw{print}{print}\print endTime $-$ startTime\;
   i $\leftarrow$ i $+$ stride\;
  }
+}
+    \SetKw{plot}{plot} \plot data\;
  \caption{Calculating Block Size of L1 D\$}
 \end{algorithm}
 
@@ -177,6 +180,130 @@ Another way to confirm the same is by taking different strides across the array,
 
 \subsection{Measuring Associativity}
 On obtaining the block size using above technique, we can reverse-engineer the associativity of the cache by repeatedly accessing blocks that we expect to belong to the same set. On encountering a higher latency than previous blocks, we can conclude that all blocks in the same set have been filled, and thus there is a replacement that is done, resulting in the higher latency.
+
+%TODO: Write algo in algorithm2e syntax
+\begin{algorithm}[H]
+\SetAlgoLined
+\KwResult{Associativity}
+ \KwIn{ASSOC, where ASSOC is the assumed value of associativity}
+ \SetKw{init}{initialise} \init cacheBlock[64M], sum $=$ 0, startTime $=$ 0, endTime $=$ 0\; 
+ \SetKw{clear}{clear} \clear cache\;
+    \Repeat{i $<$ ASSOC}{
+        alf
+    }
+ \caption{Calculating Associativity of L1 D\$}
+\end{algorithm}
+
+The above algorithm was tried with the following ASSOC values - 2, 4, 8, 16, as most modern processors fall into one of these categories.
+
+We get the following outputs from the program:
+
+\begin{results}
+\texttt{\textbf{ASSOC = 2}}
+\begin{verbatim}
+---------START Populating---------
+Byte 0: 	2146
+Byte 32768: 	12789
+---------FINISH Populating---------
+---------START New Access---------
+Byte 524288: 	5916
+Byte 0: 	638
+Byte 524288: 	174
+Byte 0: 	174
+Byte 524288: 	667
+Byte 0: 	174
+Byte 524288: 	203
+Byte 0: 	174
+---------FINISH New Access---------
+\end{verbatim}
+\end{results}
+
+\begin{results}
+\texttt{\textbf{ASSOC = 4}}
+\begin{verbatim}
+---------START Populating---------
+Byte 0: 	1479
+Byte 32768: 	14819
+Byte 65536: 	5655
+Byte 98304: 	5539
+---------FINISH Populating---------
+---------START New Access---------
+Byte 524288: 	6322
+Byte 0: 	638
+Byte 524288: 	203
+Byte 0: 	174
+Byte 524288: 	174
+Byte 0: 	174
+Byte 524288: 	174
+Byte 0: 	174
+---------FINISH New Access---------
+\end{verbatim}
+\end{results}
+
+
+\begin{results}
+\texttt{\textbf{ASSOC = 8}}
+\begin{verbatim}
+---------START Populating---------
+Byte 0: 	1247
+Byte 32768: 	13688
+Byte 65536: 	5481
+Byte 98304: 	4466
+Byte 131072: 	6177
+Byte 163840: 	7569
+Byte 196608: 	4872
+Byte 229376: 	4756
+---------FINISH Populating---------
+---------START New Access---------
+Byte 524288: 	20590
+Byte 0: 	696
+Byte 524288: 	174
+Byte 0: 	174
+Byte 524288: 	174
+Byte 0: 	174
+Byte 524288: 	174
+Byte 0: 	203
+---------FINISH New Access---------
+\end{verbatim}
+\end{results}
+
+\begin{results}
+\texttt{\textbf{ASSOC = 16}}
+\begin{verbatim}
+---------START Populating---------
+Byte 0: 	1334
+Byte 32768: 	14268
+Byte 65536: 	5887
+Byte 98304: 	4785
+Byte 131072: 	6525
+Byte 163840: 	4988
+Byte 196608: 	4263
+Byte 229376: 	4901
+Byte 262144: 	17371
+Byte 294912: 	5336
+Byte 327680: 	7424
+Byte 360448: 	4669
+Byte 393216: 	5075
+Byte 425984: 	4727
+Byte 458752: 	4640
+Byte 491520: 	5684
+---------FINISH Populating---------
+---------START New Access---------
+Byte 524288: 	4582
+Byte 0: 	696
+Byte 524288: 	203
+Byte 0: 	174
+Byte 524288: 	174
+Byte 0: 	203
+Byte 524288: 	203
+Byte 0: 	203
+---------FINISH New Access---------
+\end{verbatim}
+\end{results}
+
+From the above results, we can see that for \texttt{ASSOC} $=2$ or $4$, a new access of \texttt{Byte 524288}, which belongs to block number $8192$ has comparable latency to the previous accesses. But for \texttt{ASSOC} $=8$, we see a huge increase in the time taken to access the block. This can be inferred as the time taken to calculate the replacement candidate.
+
+We also see the same when we take \texttt{ASSOC} $=16$ - the $8^{th}$ block access has much higher latency than previous accesses.
 
 %Beginning References. Don't add any text beyond this.
 %------------------------------------------

@@ -1,0 +1,20 @@
+---------START Populating---------
+Byte 0: 	1247
+Byte 32768: 	13688
+Byte 65536: 	5481
+Byte 98304: 	4466
+Byte 131072: 	6177
+Byte 163840: 	7569
+Byte 196608: 	4872
+Byte 229376: 	4756
+---------FINISH Populating---------
+---------START New Access---------
+Byte 524288: 	20590
+Byte 0: 	696
+Byte 524288: 	174
+Byte 0: 	174
+Byte 524288: 	174
+Byte 0: 	174
+Byte 524288: 	174
+Byte 0: 	203
+---------FINISH New Access---------
