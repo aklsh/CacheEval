@@ -3,6 +3,7 @@
 \usepackage[utf8]{inputenc}
 \usepackage[margin=2cm]{geometry}
 \usepackage{multirow}
+\usepackage{hyperref}
 \usepackage{graphicx}
 \usepackage{bm}
 \usepackage[usenames,dvipsnames]{color}
@@ -110,7 +111,8 @@
 
 
 \begin{formalred}
-    This assignment was worked on individually.
+    This assignment was worked on individually.\\
+    The programs and tools used can be found here - \url{https://github.com/aklsh/CacheEval}
 \end{formalred}
 
 \section{System Details}
@@ -156,7 +158,10 @@
 
 The \texttt{RDTSC} instruction returns the data in the Time-Stamp Counter in x86 platforms \cite{intel_2021}.\\
 
-The above algorithm is first tried with a stride of 1 byte. The latencies are then plotted to obtain the following plots in Fig.\ref{Fig:blockSize}. From this, we can see that for every 64 bytes, there is a peak in the time taken. This tells us that every 64$^{th}$ byte that is accessed, there is a miss in the cache and, the required cache block has to be retrieved from memory - giving us the cache block size.
+The above algorithm is first tried with a stride of 1 byte. The latencies are then plotted to obtain the plots in Fig.\ref{Fig:blockSize}. From here, we can see that for every 64 bytes, there is a peak in the latency. This tells us that every 64$^{th}$ byte that is accessed, there is a miss in the cache and, the required cache block has to be retrieved from memory - giving us the cache block size.
+
+Another way to confirm the same is by taking different strides across the array, and plotting the access latencies for each memory access. As shown in Fig.\ref{Fig:blockSize}, we can see that every 2$^{nd}$ 32 byte stride takes a high latency, every 4$^{th}$ 16 byte stride takes a high latency, and almost every 64 byte stride takes a high latency. Thus, we again get a block size of 64 bytes.
+
 \begin{figure}[H]
     \centering
     \setlength\tabcolsep{1pt}
@@ -170,11 +175,8 @@ The above algorithm is first tried with a stride of 1 byte. The latencies are th
     \label{Fig:blockSize}
 \end{figure}
 
-Another way to confirm the same is by taking different strides across the array, and plotting the access latencies for each memory access. As shown in Fig.\ref{Fig:blockSize}, we can see that every 2$^{nd}$ 32 byte stride takes a high latency, every 4$^{th}$ 16 byte stride takes a high latency, and almost every 64 byte stride takes a high latency. Thus, we again get a block size of 64 bytes.
-
 \subsection{Measuring Associativity}
-On obtaining the block size using above technique, we can reverse-engineer the associativity of the cache by repeatedly accessing blocks that we expect to belong to the same set.
-
+On obtaining the block size using above technique, we can reverse-engineer the associativity of the cache by repeatedly accessing blocks that we expect to belong to the same set. On encountering a higher latency than previous blocks, we can conclude that all blocks in the same set have been filled, and thus there is a replacement that is done, resulting in the higher latency.
 
 %Beginning References. Don't add any text beyond this.
 %------------------------------------------

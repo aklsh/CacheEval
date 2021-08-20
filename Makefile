@@ -7,10 +7,10 @@ CC = g++
 CCFLAGS = -O0 -march=native -std=c++11
 
 eval: $(OUT)
-	taskset -c 0 $(OUT)
+	@taskset -c 0 $(OUT)
 
 $(OUT): $(SRC)
-	$(CC) $(SRC) -o$(OUT) $(CCFLAGS)
+	@$(CC) $(SRC) -o$(OUT) $(CCFLAGS)
 
 pdf: plots
 	$(MAKE) -C doc pdf
