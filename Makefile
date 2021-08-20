@@ -12,7 +12,7 @@ eval: $(OUT)
 $(OUT): $(SRC)
 	$(CC) $(SRC) -o$(OUT) $(CCFLAGS)
 
-pdf:
+pdf: plots
 	$(MAKE) -C doc pdf
 
 plots: $(DATA_FILES) $(PLT)
