@@ -1,11 +1,11 @@
-SRC = src/main.cpp
+SRC = src/main.cpp src/funcs.cpp
 OUT = build/main
 DATA_FILES = data/*.txt
 DATA_ASSOC_FILES = data/data_assoc*.txt
-PLT = src/plot.py
+PLT = plot.py
 
 CC = g++
-CCFLAGS = -O0 -march=native -std=c++11
+CCFLAGS = -O0 -march=native -std=c++11 -Iinc
 
 eval: $(OUT)
 	@taskset -c 0 $(OUT)
@@ -14,11 +14,10 @@ $(OUT): $(SRC)
 	@$(CC) $(SRC) -o$(OUT) $(CCFLAGS)
 
 pdf: plots $(DATA_ASSOC_FILES)
-	@cp data/data_assoc*.txt doc/
 	$(MAKE) -C doc pdf
 
 plots: $(DATA_FILES) $(PLT)
-	@python3 src/plot.py
+	@python3 $(PLT)
 	@cp fig/*.svg doc/
 	
 .PHONY: clean

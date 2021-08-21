@@ -1,86 +1,11 @@
-#include<iostream>
-#include<x86intrin.h>
-
-#define HUGE_SIZE 8*1024*1024
-#define CACHE_SIZE 32*1024
-#define STRIDE 64
-
-#define BLOCK_SIZE 64
-#define BLOCK_NUM CACHE_SIZE/BLOCK_SIZE
-#define ASSOC 16
-#define SET_NUM BLOCK_NUM/ASSOC
-
-void blockSize(){
-    unsigned long long int start, end, sum=0, i, j;
-    char *cacheBlock = (char*) malloc(HUGE_SIZE);
-    _mm_sfence();
-    for(j = 0;j < HUGE_SIZE; j+=1)
-        _mm_clflushopt(&cacheBlock[j]);
-    _mm_sfence();
-    std::cout<<"---------START---------"<<std::endl;
-    for (long long int i = 0; i < HUGE_SIZE; i += STRIDE){
-        _mm_mfence();
-        _mm_lfence();
-        start = __rdtsc();
-        _mm_lfence();
-        sum+=cacheBlock[i];
-        _mm_mfence();
-        _mm_lfence();
-        end = __rdtsc();
-        std::cout<<(end-start)<<std::endl;
-    }
-    std::cout<<"Sum: "<<sum<<std::endl; // without this, sum+= statement will get optimised out - won't happen at all.
-    std::cout<<"---------END---------"<<std::endl;
-    free(cacheBlock);
-}
-
-void associativity(){
-    unsigned long long int start, end, i, j;
-    char *cacheBlock = (char*) malloc(HUGE_SIZE);
-    _mm_sfence();
-    for(j = 0;j < HUGE_SIZE; j+=1)
-        _mm_clflushopt(&cacheBlock[j]);
-    _mm_sfence();
-    std::cout<<"---------START Populating---------"<<std::endl;
-    for(i=0;i<ASSOC;i+=1){
-        _mm_mfence();
-        _mm_lfence();
-        start = __rdtsc();
-        _mm_lfence();
-        cacheBlock[CACHE_SIZE*i] = 10;
-        _mm_mfence();
-        _mm_lfence();
-        end = __rdtsc();
-        std::cout<<"Byte "<<CACHE_SIZE*i<<": \t"<<(end-start)<<std::endl;
-    }
-    std::cout<<"---------FINISH Populating---------"<<std::endl;
-    std::cout<<"---------START New Access---------"<<std::endl;
-    for(int l=0;l<4;l++){
-        _mm_mfence();
-        _mm_lfence();
-        start = __rdtsc();
-        _mm_lfence();
-        cacheBlock[CACHE_SIZE*16] = 10;
-        _mm_mfence();
-        _mm_lfence();
-        end = __rdtsc();
-        std::cout<<"Byte "<<CACHE_SIZE*16<<": \t"<<(end-start)<<std::endl;
-        _mm_mfence();
-        _mm_lfence();
-        start = __rdtsc();
-        _mm_lfence();
-        cacheBlock[0] = 10;
-        _mm_mfence();
-        _mm_lfence();
-        end = __rdtsc();
-        std::cout<<"Byte 0: \t"<<(end-start)<<std::endl;
-    }
-    std::cout<<"---------FINISH New Access---------"<<std::endl;
-    free(cacheBlock);
-}
+#include "funcs.h"
+#include "options.h"
 
 int main(){
-    /* blockSize(); */
+#ifdef BLK_SZ
+    blockSize();
+#endif
+#ifdef ASC
     associativity();
-
+#endif
 }

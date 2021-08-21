@@ -44,11 +44,10 @@ def plotBlockSize():
     plt.yticks([])
     plt.ylabel(r"Latency $\to$")
     plt.xlabel(r"Byte number accessed $\to$")
-    plt.plot(x1,y1)
+    plt.plot(x1[:513],y1[:513])
     plt.savefig(plotsDir+'blockSize_1B.png')
     plt.savefig(plotsDir+'blockSize_1B.pdf')
     plt.savefig(plotsDir+'blockSize_1B.svg')
-
 
 if __name__ == "__main__":
     plotBlockSize()

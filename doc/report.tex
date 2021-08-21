@@ -106,7 +106,6 @@
 
 \hrule \hrule
 \medskip
-% \vspace{1cm}
 
 
 \begin{warning}
@@ -149,7 +148,7 @@
  \SetKw{clear}{clear} \clear cache\;
  \For{i $\leftarrow$ 1 \KwTo 64M}{
   startTime $\leftarrow$ RDTSC\;
-  sum $\leftarrow$ sum $+$ cacheBlock[i]\;
+    \SetKw{access}{access}\access cacheBlock[i]\;
   endTime $\leftarrow$ RDTSC\;
   \SetKw{print}{print}\print endTime $-$ startTime\;
   i $\leftarrow$ i $+$ stride\;
@@ -157,11 +156,12 @@
 }
     \SetKw{plot}{plot} \plot data\;
  \caption{Calculating Block Size of L1 D\$}
+    \label{Alg1}
 \end{algorithm}
 
 The \texttt{RDTSC} instruction returns the data in the Time-Stamp Counter in x86 platforms \cite{intel_2021}.\\
 
-The above algorithm is first tried with a stride of 1 byte. The latencies are then plotted to obtain the plots in Fig.\ref{Fig:blockSize}. From here, we can see that for every 64 bytes, there is a peak in the latency. This tells us that every 64$^{th}$ byte that is accessed, there is a miss in the cache and, the required cache block has to be retrieved from memory - giving us the cache block size.
+Algorithm \ref{Alg1} is first tried with a stride of 1 byte. The latencies are then plotted to obtain the plots in Fig.\ref{Fig:blockSize}. From here, we can see that for every 64 bytes, there is a peak in the latency. This tells us that every 64$^{th}$ byte that is accessed, there is a miss in the cache and, the required cache block has to be retrieved from memory - giving us the cache block size.
 
 Another way to confirm the same is by taking different strides across the array, and plotting the access latencies for each memory access. As shown in Fig.\ref{Fig:blockSize}, we can see that every 2$^{nd}$ 32 byte stride takes a high latency, every 4$^{th}$ 16 byte stride takes a high latency, and almost every 64 byte stride takes a high latency. Thus, we again get a block size of 64 bytes.
 
@@ -181,25 +181,32 @@ Another way to confirm the same is by taking different strides across the array,
 \subsection{Measuring Associativity}
 On obtaining the block size using above technique, we can reverse-engineer the associativity of the cache by repeatedly accessing blocks that we expect to belong to the same set. On encountering a higher latency than previous blocks, we can conclude that all blocks in the same set have been filled, and thus there is a replacement that is done, resulting in the higher latency.
 
-%TODO: Write algo in algorithm2e syntax
 \begin{algorithm}[H]
 \SetAlgoLined
 \KwResult{Associativity}
  \KwIn{ASSOC, where ASSOC is the assumed value of associativity}
- \SetKw{init}{initialise} \init cacheBlock[64M], sum $=$ 0, startTime $=$ 0, endTime $=$ 0\; 
+ \SetKw{init}{initialise} \init cacheBlock[64M], i $=$ 0, startTime $=$ 0, endTime $=$ 0\; 
  \SetKw{clear}{clear} \clear cache\;
-    \Repeat{i $<$ ASSOC}{
-        alf
+    \While{i $<$ ASSOC}{
+  startTime $\leftarrow$ RDTSC\;
+    \SetKw{access}{access}\access cacheBlock[i $*$ CACHE\_SIZE]\;
+  endTime $\leftarrow$ RDTSC\;
+  \SetKw{print}{print}\print endTime $-$ startTime\;
+  i $\leftarrow$ i $+$ 1\; 
     }
+  startTime $\leftarrow$ RDTSC\;
+    \SetKw{access}{access}\access cacheBlock[16 $*$ CACHE\_SIZE]\;
+  endTime $\leftarrow$ RDTSC\;
+  \SetKw{print}{print}\print endTime $-$ startTime\;
  \caption{Calculating Associativity of L1 D\$}
+    \label{Alg2}
 \end{algorithm}
 
-The above algorithm was tried with the following ASSOC values - 2, 4, 8, 16, as most modern processors fall into one of these categories.
+The final access for \texttt{cacheBlock[16*CACHE\_SIZE]} is to see the latency on accessing \texttt{ASSOC}+1 blocks in the same set. 
 
-We get the following outputs from the program:
+Algorithm \ref{Alg2} was tried with the following \texttt{ASSOC} values - 2, 4, 8, 16, as most modern processors fall into one of these categories and the following outputs were got:
 
-\begin{results}
-\texttt{\textbf{ASSOC = 2}}
+\begin{colorboxed}{Output: }{\texttt{\textbf{ASSOC = 2}}}{breakable}
 \begin{verbatim}
 ---------START Populating---------
 Byte 0: 	2146
@@ -216,10 +223,9 @@ Byte 524288: 	203
 Byte 0: 	174
 ---------FINISH New Access---------
 \end{verbatim}
-\end{results}
+\end{colorboxed}
 
-\begin{results}
-\texttt{\textbf{ASSOC = 4}}
+\begin{colorboxed}{Output: }{\texttt{\textbf{ASSOC = 4}}}{breakable}
 \begin{verbatim}
 ---------START Populating---------
 Byte 0: 	1479
@@ -238,11 +244,10 @@ Byte 524288: 	174
 Byte 0: 	174
 ---------FINISH New Access---------
 \end{verbatim}
-\end{results}
+\end{colorboxed}
 
 
-\begin{results}
-\texttt{\textbf{ASSOC = 8}}
+\begin{colorboxed}{Output: }{\texttt{\textbf{ASSOC = 8}}}{breakable}
 \begin{verbatim}
 ---------START Populating---------
 Byte 0: 	1247
@@ -265,10 +270,9 @@ Byte 524288: 	174
 Byte 0: 	203
 ---------FINISH New Access---------
 \end{verbatim}
-\end{results}
+\end{colorboxed}
 
-\begin{results}
-\texttt{\textbf{ASSOC = 16}}
+\begin{colorboxed}{Output: }{\texttt{\textbf{ASSOC = 16}}}{breakable}
 \begin{verbatim}
 ---------START Populating---------
 Byte 0: 	1334
@@ -299,11 +303,11 @@ Byte 524288: 	203
 Byte 0: 	203
 ---------FINISH New Access---------
 \end{verbatim}
-\end{results}
+\end{colorboxed}
 
-From the above results, we can see that for \texttt{ASSOC} $=2$ or $4$, a new access of \texttt{Byte 524288}, which belongs to block number $8192$ has comparable latency to the previous accesses. But for \texttt{ASSOC} $=8$, we see a huge increase in the time taken to access the block. This can be inferred as the time taken to calculate the replacement candidate.
+From the above results, we can see that for \texttt{ASSOC} of 2 or 4, a new access of \texttt{Byte 524288}, which belongs to block number 8192 has comparable latency to the previous accesses. But for \texttt{ASSOC} of 8, we see a huge increase in the time taken to access the same block. This can be inferred as the time taken to calculate the replacement candidate. We also see the same when we take \texttt{ASSOC} of 16 - the 8$^{th}$ block access has much higher latency than previous accesses.
 
-We also see the same when we take \texttt{ASSOC} $=16$ - the $8^{th}$ block access has much higher latency than previous accesses.
+Another insight from the output is that the evicted block was Block 0 - it was evicted from L1 to L2. Later upon accessing the same, we bring it back in the L1 cache, although at a slightly higher latency than L1 cache access.
 
 %Beginning References. Don't add any text beyond this.
 %------------------------------------------

@@ -11,5 +11,5 @@ figures: *.svg
 clean:
 	latexmk -c && rm -rf report.synctex.gz && rm -f report.bbl
 	rm -rf _minted-report
-	rm -f *.pdf
+	rm -f report.pdf
 	rm -f *.pdf_tex
