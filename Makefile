@@ -1,4 +1,4 @@
-SRC = src/main.cpp src/funcs.cpp
+SRC = src/main.cpp src/funcs.cpp inc/options.h
 OUT = build/main
 DATA_FILES = data/*.txt
 DATA_ASSOC_FILES = data/data_assoc*.txt

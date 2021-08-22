@@ -179,7 +179,7 @@ Another way to confirm the same is by taking different strides across the array,
 \end{figure}
 
 \subsection{Measuring Associativity}
-On obtaining the block size using above technique, we can reverse-engineer the associativity of the cache by repeatedly accessing blocks that we expect to belong to the same set. On encountering a higher latency than previous blocks, we can conclude that all blocks in the same set have been filled, and thus there is a replacement that is done, resulting in the higher latency.
+We can reverse-engineer the associativity of the cache by repeatedly accessing blocks that we expect to belong to the same set. On encountering a higher latency for one block, we can infer that it was replaced and hence took more time, giving us the associativity of the cache.
 
 \begin{algorithm}[H]
 \SetAlgoLined
@@ -187,61 +187,59 @@ On obtaining the block size using above technique, we can reverse-engineer the a
  \KwIn{ASSOC, where ASSOC is the assumed value of associativity}
  \SetKw{init}{initialise} \init cacheBlock[64M], i $=$ 0, startTime $=$ 0, endTime $=$ 0\; 
  \SetKw{clear}{clear} \clear cache\;
-    \While{i $<$ ASSOC}{
+    \While{i $\leq$ ASSOC}{
   startTime $\leftarrow$ RDTSC\;
     \SetKw{access}{access}\access cacheBlock[i $*$ CACHE\_SIZE]\;
   endTime $\leftarrow$ RDTSC\;
   \SetKw{print}{print}\print endTime $-$ startTime\;
   i $\leftarrow$ i $+$ 1\; 
     }
+    \SetKw{reset}{reset} \reset i $=$ 0\;
+    \While{i $\leq$ ASSOC}{
   startTime $\leftarrow$ RDTSC\;
-    \SetKw{access}{access}\access cacheBlock[16 $*$ CACHE\_SIZE]\;
+    \SetKw{access}{access}\access cacheBlock[i $*$ CACHE\_SIZE]\;
   endTime $\leftarrow$ RDTSC\;
   \SetKw{print}{print}\print endTime $-$ startTime\;
+  i $\leftarrow$ i $+$ 1\; 
+    }
  \caption{Calculating Associativity of L1 D\$}
     \label{Alg2}
 \end{algorithm}
-
-The final access for \texttt{cacheBlock[16*CACHE\_SIZE]} is to see the latency on accessing \texttt{ASSOC}+1 blocks in the same set. 
 
 Algorithm \ref{Alg2} was tried with the following \texttt{ASSOC} values - 2, 4, 8, 16, as most modern processors fall into one of these categories and the following outputs were got:
 
 \begin{colorboxed}{Output: }{\texttt{\textbf{ASSOC = 2}}}{breakable}
 \begin{verbatim}
+========== ASSOCIATIVITY CALCULATION ==========
 ---------START Populating---------
-Byte 0: 	2146
-Byte 32768: 	12789
+Byte 0:         1160
+Byte 32768:     12412
+Byte 65536:     7221
 ---------FINISH Populating---------
 ---------START New Access---------
-Byte 524288: 	5916
-Byte 0: 	638
-Byte 524288: 	174
-Byte 0: 	174
-Byte 524288: 	667
-Byte 0: 	174
-Byte 524288: 	203
-Byte 0: 	174
+Byte 0:         203
+Byte 32768:     203
+Byte 65536:     203
 ---------FINISH New Access---------
 \end{verbatim}
 \end{colorboxed}
 
 \begin{colorboxed}{Output: }{\texttt{\textbf{ASSOC = 4}}}{breakable}
 \begin{verbatim}
+========== ASSOCIATIVITY CALCULATION ==========
 ---------START Populating---------
-Byte 0: 	1479
-Byte 32768: 	14819
-Byte 65536: 	5655
-Byte 98304: 	5539
+Byte 0:         609
+Byte 32768:     15457
+Byte 65536:     5597
+Byte 98304:     11948
+Byte 131072:    7772
 ---------FINISH Populating---------
 ---------START New Access---------
-Byte 524288: 	6322
-Byte 0: 	638
-Byte 524288: 	203
-Byte 0: 	174
-Byte 524288: 	174
-Byte 0: 	174
-Byte 524288: 	174
-Byte 0: 	174
+Byte 0:         203
+Byte 32768:     203
+Byte 65536:     203
+Byte 98304:     203
+Byte 131072:    203
 ---------FINISH New Access---------
 \end{verbatim}
 \end{colorboxed}
@@ -249,65 +247,77 @@ Byte 0: 	174
 
 \begin{colorboxed}{Output: }{\texttt{\textbf{ASSOC = 8}}}{breakable}
 \begin{verbatim}
+========== ASSOCIATIVITY CALCULATION ==========
 ---------START Populating---------
-Byte 0: 	1247
-Byte 32768: 	13688
-Byte 65536: 	5481
-Byte 98304: 	4466
-Byte 131072: 	6177
-Byte 163840: 	7569
-Byte 196608: 	4872
-Byte 229376: 	4756
+Byte 0:         1218
+Byte 32768:     14935
+Byte 65536:     6699
+Byte 98304:     5655
+Byte 131072:    6757
+Byte 163840:    4698
+Byte 196608:    5684
+Byte 229376:    4524
+Byte 262144:    22098
 ---------FINISH Populating---------
 ---------START New Access---------
-Byte 524288: 	20590
-Byte 0: 	696
-Byte 524288: 	174
-Byte 0: 	174
-Byte 524288: 	174
-Byte 0: 	174
-Byte 524288: 	174
-Byte 0: 	203
+Byte 0:         580
+Byte 32768:     203
+Byte 65536:     203
+Byte 98304:     203
+Byte 131072:    232
+Byte 163840:    203
+Byte 196608:    203
+Byte 229376:    203
+Byte 262144:    203
 ---------FINISH New Access---------
 \end{verbatim}
 \end{colorboxed}
 
 \begin{colorboxed}{Output: }{\texttt{\textbf{ASSOC = 16}}}{breakable}
 \begin{verbatim}
+========== ASSOCIATIVITY CALCULATION ==========
 ---------START Populating---------
-Byte 0: 	1334
-Byte 32768: 	14268
-Byte 65536: 	5887
-Byte 98304: 	4785
-Byte 131072: 	6525
-Byte 163840: 	4988
-Byte 196608: 	4263
-Byte 229376: 	4901
-Byte 262144: 	17371
-Byte 294912: 	5336
-Byte 327680: 	7424
-Byte 360448: 	4669
-Byte 393216: 	5075
-Byte 425984: 	4727
-Byte 458752: 	4640
-Byte 491520: 	5684
+Byte 0:         1073
+Byte 32768:     13746
+Byte 65536:     11571
+Byte 98304:     5945
+Byte 131072:    5742
+Byte 163840:    5742
+Byte 196608:    6612
+Byte 229376:    5771
+Byte 262144:    75951
+Byte 294912:    5742
+Byte 327680:    11078
+Byte 360448:    6032
+Byte 393216:    5945
+Byte 425984:    5916
+Byte 458752:    5858
+Byte 491520:    6612
+Byte 524288:    5655
 ---------FINISH Populating---------
 ---------START New Access---------
-Byte 524288: 	4582
-Byte 0: 	696
-Byte 524288: 	203
-Byte 0: 	174
-Byte 524288: 	174
-Byte 0: 	203
-Byte 524288: 	203
-Byte 0: 	203
+Byte 0:         493
+Byte 32768:     203
+Byte 65536:     203
+Byte 98304:     203
+Byte 131072:    203
+Byte 163840:    203
+Byte 196608:    203
+Byte 229376:    203
+Byte 262144:    203
+Byte 294912:    203
+Byte 327680:    203
+Byte 360448:    203
+Byte 393216:    203
+Byte 425984:    203
+Byte 458752:    203
+Byte 491520:    203
+Byte 524288:    174
 ---------FINISH New Access---------
 \end{verbatim}
 \end{colorboxed}
 
-From the above results, we can see that for \texttt{ASSOC} of 2 or 4, a new access of \texttt{Byte 524288}, which belongs to block number 8192 has comparable latency to the previous accesses. But for \texttt{ASSOC} of 8, we see a huge increase in the time taken to access the same block. This can be inferred as the time taken to calculate the replacement candidate. We also see the same when we take \texttt{ASSOC} of 16 - the 8$^{th}$ block access has much higher latency than previous accesses.
-
-Another insight from the output is that the evicted block was Block 0 - it was evicted from L1 to L2. Later upon accessing the same, we bring it back in the L1 cache, although at a slightly higher latency than L1 cache access.
+From the above results, we can see that for \texttt{ASSOC} of 2 or 4, any extra block doesn't cause another to be evicted - all access times remain same. But for \texttt{ASSOC} of 8, we see an increase in the time taken to access block 0. This can be inferred as the time taken to bring it from L2, as it was evicted in the previous round. We see a similar pattern for \texttt{ASSOC} of 16 - some blocks take higher latency than others.
 
 %Beginning References. Don't add any text beyond this.
 %------------------------------------------
