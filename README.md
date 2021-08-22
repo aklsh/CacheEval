@@ -10,8 +10,8 @@ python3, gcc, x86_64 processor
 Notes
 -----
 - To build and run program: `make eval`
-  - You will have to edit inc/options.h to define STRIDE and ASSOC values, as well as comment/uncomment whether to calculate Block Size and/or Associativity.
-  - To use the data to plot figures, tee the output to data/data_*.txt and remove the unnecessary comment lines. Refer to plot.py for exact data file name.
+  - You will have to edit `inc/options.h` to define `STRIDE` and `ASSOC` values, as well as comment/uncomment whether to calculate Block Size and/or Associativity.
+  - To use the data to plot figures, tee the output to data/data_\*.txt and **remove the unnecessary comment lines**. It is critical to do so, and the plotting program will throw an error otherwise. Refer to plot.py for exact data file(s) name(s).
 - To generate plots: `make plots`
 - To generate report: `make pdf`
 
