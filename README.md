@@ -5,15 +5,15 @@ Pre-requisites
 --------------
 python3, gcc, x86_64 processor
 
-DISCLAIMER: This works only for x86_64 processors as the program uses instructions specific to that architecture. Make sure that your processor supports the RDTSC instruction.
+**DISCLAIMER: This works only for x86_64 processors as the program uses instructions specific to that architecture. Make sure that your processor supports the RDTSC instruction.**
 
 Notes
 -----
-- To build and run program: make eval
+- To build and run program: `make eval`
   - You will have to edit inc/options.h to define STRIDE and ASSOC values, as well as comment/uncomment whether to calculate Block Size and/or Associativity.
   - To use the data to plot figures, tee the output to data/data_*.txt and remove the unnecessary comment lines. Refer to plot.py for exact data file name.
-- To generate plots: make plots
-- To generate report: make pdf
+- To generate plots: `make plots`
+- To generate report: `make pdf`
 
 References
 ----------
