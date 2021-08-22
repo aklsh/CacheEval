@@ -5,6 +5,8 @@ Pre-requisites
 --------------
 python3, gcc, x86_64 processor
 
+DISCLAIMER: This works only for x86_64 processors as the program uses instructions specific to that architecture. Make sure that your processor supports the RDTSC instruction.
+
 Notes
 -----
 - To build and run program: make eval
