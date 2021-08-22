@@ -1,5 +1,4 @@
 #include "funcs.h"
-#include "options.h"
 
 int main(){
 #ifdef BLK_SZ
